@@ -45,14 +45,18 @@ Final dataset can be found in _'./data'_ as **SO279_CTD_data.csv**. Dataset incl
 * Ammonim_flag
     
 Processing steps include the following scripts and order:
-1.  _processing_ctd_raw.py_: Retrieves CTD data for all Niskins and adds nutrient data.
+1. _processing_ctd_raw.py_: Retrieves CTD data for all Niskins and adds nutrient data.
 
-2.  _processing_vindta.py_: Processes TA and DIC lab analysis. Calculates pH(TA, DIC, 25, free scale), pH(initial during TA titration, 25, free scale) and pH(TA, DIC, in-situ temperature, total scale). The following variables are added to the dataset:
+2. _processing_vindta.py_: Processes TA and DIC lab analysis for both CTD and UWS discrete samples. Calculates pH(TA, DIC, 25, free scale), pH(initial during TA titration, 25, free scale) and pH(TA, DIC, in-situ temperature, total scale).
 
-3.  _processing_CTD_format.py_: Reorganizes dataset in a csv user-friendly format.
+3. _processing_CTD_format.py_: Reorganizes dataset in a csv user-friendly format.
 
 ### UWS discrete samples
 Final dataset can be found in _'./data'_ as **SO279_UWS_data.csv**. Dataset includes the sames variables as the CTD discrete samples dataset.
+
+1. _processing_subsamples_raw.py_: Retrieves UWS discrete samples data and adds nutrients. The closest (in time) correcyed salinity and in-situ temperature is added to each sample from the UWS continuous pH dataset.
+
+2. _processing_vindta.py_: Processes TA and DIC lab analysis for both CTD and UWS discrete samples. Calculates pH(TA, DIC, 25, free scale), pH(initial during TA titration, 25, free scale) and pH(TA, DIC, in-situ temperature, total scale).
 
 * _processing_uws_raw.py_: Retrieves raw continuous pH(optode) data from all underway Pyroscience optode pH files. Adds corresponding biogeochemical data from the SMB salinograph on board. Corrects salinity. Estimates TA(est) for the North Atlantic Ocean from salinity and temperature according to Lee et al. (2006). Calculates pH(TA(est), pH(optode), in-situ temperature, total scale). Creates a dataset including the following variables:
     * _filename_
@@ -118,7 +122,6 @@ Final dataset can be found in _'./data'_ as **SO279_UWS_data.csv**. Dataset incl
     * _ta_est_
     * _pH_insitu_ta_est_
 
-* _processing_uws_subsamples.py_: Retrieves UWS subsample data and adds nutrient data. For each subsample, the closest (in time) salinity (corrected) and temperature is fetched from the continuous pH dataset.
 
 * _processing_vindta.py_: Processes TA and DIC lab analysis. Calculates pH(TA, DIC, 25, free scale), pH(initial during TA titration, 25, free scale) and pH(TA, DIC, in-situ temperature, total scale). The following variables are added to the dataset:
     * _talk_ (Total Alkalinity)
