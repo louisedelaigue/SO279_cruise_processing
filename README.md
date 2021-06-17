@@ -89,4 +89,4 @@ Processing steps include the following scripts and order:
 ### Other processing
 Flagging for nutrients was done according to a precision number. For nutrient variable and pair of duplicates, the difference between duplicates was divided by the mean value of the duplicate pair (giving diff/mean). For each nutrient variable, the precision number was given by the mean of all _(diff_mean)_. Then, each duplicate was compared against the precision number: a flag = 3 was given to all duplicates greater than the precision number and a flag = 2 was given to all duplicates less than the precision number.
 
-:warning: ** Precision numbers were computed from the UWS discrete samples, as the reproducibility was much more superior than the CTD discrete samples.**
+:warning: **Precision numbers were computed from the UWS discrete samples, as the reproducibility was much more superior than the CTD discrete samples.**
