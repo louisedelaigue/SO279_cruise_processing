@@ -14,7 +14,7 @@ All calculations pertainting to the carbonate system were done using the Python 
 
 All column header abbreviations and variable flags follow _Best Practice Data Standards for Discrete Chemical Oceanographic Observations_ (Jiang et al, in prep).
 
-### CTD data
+### CTD discrete samples
 Final dataset can be found in _'./data'_ as **SO279_CTD_data.csv**. Dataset includes the following variables:
 * EXPOCODE
 * Cruise_ID
@@ -49,10 +49,10 @@ Processing steps include:
 
 * _processing_vindta.py_: Processes TA and DIC lab analysis. Calculates pH(TA, DIC, 25, free scale), pH(initial during TA titration, 25, free scale) and pH(TA, DIC, in-situ temperature, total scale). The following variables are added to the dataset:
 
-* _so279_CTD_format.py_: Reorganizes dataset in a csv user-friendly format.
+* _processing_CTD_format.py_: Reorganizes dataset in a csv user-friendly format.
 
-### UWS data
-Final dataset can be found in _'./data'_ as **SO279_UWS_data.csv.**
+### UWS discrete samples
+Final dataset can be found in _'./data'_ as **SO279_UWS_data.csv**. Dataset includes the sames variables as the CTD discrete samples dataset.
 
 * _processing_uws_raw.py_: Retrieves raw continuous pH(optode) data from all underway Pyroscience optode pH files. Adds corresponding biogeochemical data from the SMB salinograph on board. Corrects salinity. Estimates TA(est) for the North Atlantic Ocean from salinity and temperature according to Lee et al. (2006). Calculates pH(TA(est), pH(optode), in-situ temperature, total scale). Creates a dataset including the following variables:
     * _filename_
