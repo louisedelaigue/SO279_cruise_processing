@@ -54,6 +54,7 @@ Processing steps include the following scripts and order:
 ### UWS discrete samples
 Final dataset can be found in _'./data'_ as **SO279_subsamples_data.csv**. Dataset includes the sames variables as the CTD discrete samples dataset.
 
+Processing steps include the following scripts and order:
 1. _processing_subsamples_raw.py_: Retrieves UWS discrete samples data and adds nutrients. The closest (in time) correcyed salinity and in-situ temperature is added to each sample from the UWS continuous pH dataset.
 
 2. _processing_vindta.py_: Processes TA and DIC lab analysis for both CTD and UWS discrete samples. Calculates pH(TA, DIC, 25, free scale), pH(initial during TA titration, 25, free scale) and pH(TA, DIC, in-situ temperature, total scale).
@@ -78,7 +79,10 @@ Final dataset can be found in _'./data'_ as **SO279_UWS_data.csv**. Dataset incl
 * pH_TS_measured (optode)
 * pH_flag
 
-* _processing_uws_raw.py_: Retrieves raw continuous pH(optode) data from all underway Pyroscience optode pH files. Adds corresponding biogeochemical data from the SMB salinograph on board. Corrects salinity. Estimates TA(est) for the North Atlantic Ocean from salinity and temperature according to Lee et al. (2006). Calculates pH(TA(est), pH(optode), in-situ temperature, total scale).
+Processing steps include the following scripts and order:
+1. _processing_uws_raw.py_: Retrieves raw continuous pH(optode) data from all underway Pyroscience optode pH files. Adds corresponding biogeochemical data from the SMB thermo-salinograph on board. Corrects salinity. Estimates TA(est) for the North Atlantic Ocean from salinity and in-situ temperature according to Lee et al. (2006). Calculates pH(TA(est), pH(optode), in-situ temperature, total scale).
 
+2. _processing_uws_pH_correction.py_: Cross-calibrates measured pH(total scale) using processed UWS discrete samples.
 
-* _processing_uws_pH_correction.py_: All duplicate subsamples are averaged (mean). 
+3. _processing_UWS_format.py_: Reorganizes dataset in a csv user-friendly format.
+
