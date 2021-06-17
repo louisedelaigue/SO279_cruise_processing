@@ -16,33 +16,33 @@ All column header abbreviations follow _Best Practice Data Standards for Discret
 
 ### CTD data
 Final dataset can be found in _'./data'_ as **SO279_CTD_data.csv**. Dataset includes the following variables:
-    * EXPOCODE
-    * Cruise_ID
-    * Year_UTC
-    * Month_UTC
-    * Day_UTC
-    * Time_UTC
-    * Latitude
-    * Longitude
-    * Depth
-    * CTDTEMP_ITS90
-    * CTDSAL_PSS78
-    * DIC
-    * DIC_flag
-    * TA
-    * TA_flag
-    * Silicate
-    * Silicate_flag
-    * Phosphate
-    * Phosphate_flag
-    * Nitrate
-    * Nitrate_flag
-    * Nitrite
-    * Nitrite_flag
-    * Nitrate_and_Nitrite
-    * Nitrate_and_Nitrite_flag
-    * Ammonium
-    * Ammonim_flag
+* EXPOCODE
+* Cruise_ID
+* Year_UTC
+* Month_UTC
+* Day_UTC
+* Time_UTC
+* Latitude
+* Longitude
+* Depth
+* CTDTEMP_ITS90
+* CTDSAL_PSS78
+* DIC
+* DIC_flag
+* TA
+* TA_flag
+* Silicate
+* Silicate_flag
+* Phosphate
+* Phosphate_flag
+* Nitrate
+* Nitrate_flag
+* Nitrite
+* Nitrite_flag
+* Nitrate_and_Nitrite
+* Nitrate_and_Nitrite_flag
+* Ammonium
+* Ammonim_flag
     
 Processing steps include:
 * _processing_ctd_raw.py_: Retrieves CTD data for all Niskins and adds nutrient data.
