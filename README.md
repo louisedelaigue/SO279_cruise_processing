@@ -7,6 +7,9 @@ Data used in this repo come from the SO279 cruise across the North Atlantic in t
 
 CTD and UWS discrete samples dataset contain respectively 77 measurements (all from the CTD rosette) and 51 measurements (all from the UWS) of seawater dissolved inorganic carbon (DIC) , total alkalinity (TA) and nutrients (Si, PO4, NH4, NO3 and NO2). The UWS time series dataset contains a high-resolution (1 measurement every 30 seconds) time series of surface ocean pH measured with a PyroScience fiber-based pH sensor (PHROBSC-PK8T) and cross-calibrated using discrete carbonate system observations (total alkalinity, dissolved inorganic carbon and nutrients). Samples were collected during R/V Sonne cruise SO279 in Dec 2020 in the Azores Region of the North Atlantic Ocean, as part of the NAPTRAM research programme to build an understanding of the transport pathways of plastic and microplastic debris in the North Atlantic. Measurements were carried out using VINDTA 3C instruments (#017, Marianda, Germany) at the NIOZ Royal Netherlands Institute for Sea Research. Bad results resulting from technical issues during analysis have been removed from these results, so there are no recognised issues. The data were collected as part of an international effort from the JPI Oceans project HOTMIC and BMBF project PLASTISEA , and forms a joint effort of HOTMIC and PLASTISEA researchers from a range of countries and institutes. The NIOZ created the metadata entry and is responsible for holding master copies of the data.
 
+## Cruise report
+The short cruise report can be found in the main folder of this repo as _SO279_GPF_20-3_089_SCR.pdf_.
+
 ## Data processing
 Scripts below are used in the processing of CTD and UWS data. Each script's function is briefly highlighted and variables are listed. More details can be found in _methods.docx_ (main folder, to be updated). 
 
