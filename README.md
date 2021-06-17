@@ -107,4 +107,4 @@ Flagging for nutrients was done according to a precision number. For nutrient va
 
 :warning: Precision numbers were computed from the UWS discrete samples, as the reproducibility was much more superior than the CTD discrete samples.
 
-Scripts for the computation of precision numbers can be found as _processing_X_fu_number.py_.
+Scripts for the computation of precision numbers can be found as _processing_X_precision_number.py_.
