@@ -52,7 +52,7 @@ Processing steps include the following scripts and order:
 3. _processing_CTD_format.py_: Reorganizes dataset in a csv user-friendly format.
 
 ### UWS discrete samples
-Final dataset can be found in _'./data'_ as **SO279_UWS_data.csv**. Dataset includes the sames variables as the CTD discrete samples dataset.
+Final dataset can be found in _'./data'_ as **SO279_subsamples_data.csv**. Dataset includes the sames variables as the CTD discrete samples dataset.
 
 1. _processing_subsamples_raw.py_: Retrieves UWS discrete samples data and adds nutrients. The closest (in time) correcyed salinity and in-situ temperature is added to each sample from the UWS continuous pH dataset.
 
@@ -61,97 +61,24 @@ Final dataset can be found in _'./data'_ as **SO279_UWS_data.csv**. Dataset incl
 3. _processing_subsamples_format.py_: Reorganizes dataset in a csv user-friendly format.
 
 ### UWS pH time series
-* _processing_uws_raw.py_: Retrieves raw continuous pH(optode) data from all underway Pyroscience optode pH files. Adds corresponding biogeochemical data from the SMB salinograph on board. Corrects salinity. Estimates TA(est) for the North Atlantic Ocean from salinity and temperature according to Lee et al. (2006). Calculates pH(TA(est), pH(optode), in-situ temperature, total scale). Creates a dataset including the following variables:
-    * _filename_
-    * _sec_
-    * _pH_cell_
-    * _temp_cell_
-    * _dphi_
-    * _signal_intensity_
-    * _ambient_light_
-    * _ldev_
-    * _status_ph_
-    * _status_temp_
-    * _WS_airtemp_
-    * _WS_baro_
-    * _WS_course_
-    * _WS_date_
-    * _WS_heading_
-    * _WS_humidity_
-    * _WS_humidity_
-    * _WS_lat_
-    * _WS_lon_
-    * _WS_longwave_
-    * _WS_normto_
-    * _WS_pyrogeometer_
-    * _WS_sensorvalue_
-    * _WS_sentence_
-    * _WS_shortwave_
-    * _WS_speed_
-    * _WS_timestamp_
-    * _WS_watertemp_
-    * _WS_winddirection_rel
-    * _WS_winddirection_true_
-    * _WS_windspeed_rel_
-    * _WS_windspeed_true_
-    * _WS_windspeed_true_bft_
-    * _chl_
-    * _SBE_45_c_
-    * _date_
-    * _delay_
-    * _depth_
-    * _ew_
-    * _flow_
-    * _lat_
-    * _lon_
-    * _smb_name_
-    * _ns_
-    * _system_
-    * _SBE45_sal_
-    * _sentence_
-    * _SMB.RSSMB.SMB_SN_
-    * _SBE45_sv_
-    * _insitu_sv_
-    * _smb_status_
-    * _smb_sv_aml_
-    * _SBE38_water_temp_
-    * _SBE45_water_temp_
-    * _smb_time_
-    * _smb_tur_
-    * _temp_diff_
-    * _pH_
-    * _pchip_salinity_
-    * _sal_corr_
-    * _ta_est_
-    * _pH_insitu_ta_est_
+Final dataset can be found in _'./data'_ as **SO279_UWS_data.csv**. Dataset includes the following variables:
+* EXPOCODE
+* Cruise_ID
+* Year_UTC
+* Month_UTC
+* Day_UTC
+* Time_UTC
+* Latitude
+* Longitude
+* Depth
+* Temperature
+* TEMP_pH
+* Salinity
+* Salinity_flag
+* pH_TS_measured (optode)
+* pH_flag
 
+* _processing_uws_raw.py_: Retrieves raw continuous pH(optode) data from all underway Pyroscience optode pH files. Adds corresponding biogeochemical data from the SMB salinograph on board. Corrects salinity. Estimates TA(est) for the North Atlantic Ocean from salinity and temperature according to Lee et al. (2006). Calculates pH(TA(est), pH(optode), in-situ temperature, total scale).
 
-* _processing_vindta.py_: Processes TA and DIC lab analysis. Calculates pH(TA, DIC, 25, free scale), pH(initial during TA titration, 25, free scale) and pH(TA, DIC, in-situ temperature, total scale). The following variables are added to the dataset:
-    * _talk_ (Total Alkalinity)
-    * _flag_talk_
-    * _tco2_ (Dissolved Inorganic Carbon)
-    * _flag_tco2_
-    * _pH_talk_tco2_25_
-    * _pH_init_talk_
-    * _pH_talk_tco2_insitu_temp_
 
 * _processing_uws_pH_correction.py_: All duplicate subsamples are averaged (mean). 
-
-## Further processing
-* _so279_sal_compilation.py_: compiles salinity mean, min and max for each cruise day.
-
-* _so279_satdat_interp.py_: interpolates satellite data along latitude, longitude and time to match cruise data.
-
-## Graphs
-* _so279_gif_X.py_: (X = sal, sla or sst) creates a gif of the evolution of sea level anomaliy, surface salinity or surface temperature throughout the duration of the cruise, in the study area.
-
-* _so279_plot_init.py_: creates a graph for:
-    * Temperature from the optode sensor and in-situ temperature from the ships' SMB salinograph vs. time
-    * In-situ temperature (SMB) and in-situ salinity (SMB) vs. time
-    * In-situ pH (recalc) and in-situ temperature (SMB) vs. time
-
-* _so279_track_phinsitu.py_: creates a map showing the ship's track with pH evolution.
-
-* _so279_track_ship.py_: creates a map showing the ship's track with time indication.
-
-* _so279_transect.py_: creates figure plotting transect on map, with four subsequent graphs of 1. in-situ pH, 2. surface salinity (SMB), 3. surface temperature (SMB) and 4. sea level anomaly (interpolated from CMEMS data) vs. time.
