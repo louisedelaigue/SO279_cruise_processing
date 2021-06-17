@@ -12,7 +12,7 @@ Scripts below are used in the processing of CTD and UWS data. Each script's func
 
 All calculations pertainting to the carbonate system were done using the Python toolbox [PyCO2SYS](https://pyco2sys.readthedocs.io/en/latest/) and default carbonic acid dissociation constants (Sulpis et al., 2020).
 
-All column header abbreviations follow _Best Practice Data Standards for Discrete Chemical Oceanographic Observations_ (Jiang et al, in prep).
+All column header abbreviations and variable flags follow _Best Practice Data Standards for Discrete Chemical Oceanographic Observations_ (Jiang et al, in prep).
 
 ### CTD data
 Final dataset can be found in _'./data'_ as **SO279_CTD_data.csv**. Dataset includes the following variables:
@@ -48,15 +48,6 @@ Processing steps include:
 * _processing_ctd_raw.py_: Retrieves CTD data for all Niskins and adds nutrient data.
 
 * _processing_vindta.py_: Processes TA and DIC lab analysis. Calculates pH(TA, DIC, 25, free scale), pH(initial during TA titration, 25, free scale) and pH(TA, DIC, in-situ temperature, total scale). The following variables are added to the dataset:
-    * _talk_ (Total Alkalinity)
-    * _flag_talk_
-    * _tco2_ (Dissolved Inorganic Carbon)
-    * _flag_tco2_
-    * _pH_talk_tco2_25_
-    * _pH_init_talk_
-    * _pH_talk_tco2_insitu_temp_
- 
- _flag_talk_ and _flag_tco2_ are based on the GLODAP convention.
 
 * _so279_CTD_format.py_: Reorganizes dataset in a csv user-friendly format.
 
