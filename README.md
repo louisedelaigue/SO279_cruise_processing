@@ -19,6 +19,17 @@ All calculations pertainting to the carbonate system were done using the Python 
 
 All column header abbreviations and variable flags follow _Best Practice Data Standards for Discrete Chemical Oceanographic Observations_ (Jiang et al, in prep).
 
+### Scripts order (quick processing)
+Further below is a description of all scripts pertaining to the above mentioned datasets. All CTD discrete samples can be ran independently from UWS-related scripts. However for efficiency, it is advised to run all scripts in the following order:
+1. _processing_uws_raw.py_
+2. _processing_subsamples_raw.py_
+3. _processing_ctd_raw.py_
+4. _processing_vindta.py_
+5. _processing_subsamples_format.py_
+6. _processing_CTD_format.py_
+7. _processing_uws_pH_correction.py_
+8. _processing_uws_format.py_
+
 ### CTD discrete samples
 Final dataset can be found in _'./data'_ as **SO279_CTD_data.csv**. Dataset includes the following variables:
 * EXPOCODE
