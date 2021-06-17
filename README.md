@@ -15,7 +15,7 @@ All data processing presented in this repo was done by Louise Delaigue and Matth
 
 Scripts below are used in the processing of CTD and UWS data. Each script's function is briefly highlighted and variables are listed. More details can be found in _methods.docx_ (main folder, to be updated). 
 
-All calculations pertainting to the carbonate system were done using the Python toolbox [PyCO2SYS](https://pyco2sys.readthedocs.io/en/latest/) and default carbonic acid dissociation constants (Sulpis et al., 2020).
+All calculations pertainting to the carbonate system were done using the Python toolbox [PyCO2SYS](https://pyco2sys.readthedocs.io/en/latest/) and default carbonic acid dissociation constants (Sulpis et al., 2020). VINDTA lab analysis was processed using the packages [Calkulate](https://calkulate.readthedocs.io/en/latest/) and [koolstof](https://github.com/mvdh7/koolstof).
 
 All column header abbreviations and variable flags follow _Best Practice Data Standards for Discrete Chemical Oceanographic Observations_ (Jiang et al, in prep).
 
