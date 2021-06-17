@@ -12,38 +12,40 @@ Scripts below are used in the processing of CTD and UWS data. Each script's func
 
 All calculations pertainting to the carbonate system were done using the Python toolbox [PyCO2SYS](https://pyco2sys.readthedocs.io/en/latest/) and default carbonic acid dissociation constants (Sulpis et al., 2020).
 
-### CTD data
-Final dataset can be found in _'./data'_ as **SO279_CTD_data.csv.**
+All column header abbreviations follow _Best Practice Data Standards for Discrete Chemical Oceanographic Observations_ (Jiang et al, in prep).
 
+### CTD data
+Final dataset can be found in _'./data'_ as **SO279_CTD_data.csv**. Dataset includes the following variables:
+    * EXPOCODE
+    * Cruise_ID
+    * Year_UTC
+    * Month_UTC
+    * Day_UTC
+    * Time_UTC
+    * Latitude
+    * Longitude
+    * Depth
+    * CTDTEMP_ITS90
+    * CTDSAL_PSS78
+    * DIC
+    * DIC_flag
+    * TA
+    * TA_flag
+    * Silicate
+    * Silicate_flag
+    * Phosphate
+    * Phosphate_flag
+    * Nitrate
+    * Nitrate_flag
+    * Nitrite
+    * Nitrite_flag
+    * Nitrate_and_Nitrite
+    * Nitrate_and_Nitrite_flag
+    * Ammonium
+    * Ammonim_flag
+    
 Processing steps include:
-* _processing_ctd_raw.py_: Retrieves CTD data for all Niskins and adds nutrient data. Creates a dataset including the following variables:
-    * _time_seconds_
-    * _time_elapsed_seconds_
-    * _time_elapsed_min_
-    * _station_
-    * _niskin_
-    * _duplicate_
-    * _depth_
-    * _pressure_
-    * _salinity_a_
-    * _salinity_b_
-    * _salinity_mean_
-    * _temperature_a_
-    * _temperature_b_
-    * _temperature_mean_
-    * _oxygen_a_
-    * _oxygen_b_
-    * _oxygen_mean_
-    * _fluorescence_
-    * _irradiance_
-    * _turbidity_
-    * _total_phosphate_
-    * _total_ammonia_
-    * _total_nitrate_nitrite_
-    * _total_nitrite_
-    * _total_nitrate_
-    * _total_silicate_
-    * _flag_
+* _processing_ctd_raw.py_: Retrieves CTD data for all Niskins and adds nutrient data.
 
 * _processing_vindta.py_: Processes TA and DIC lab analysis. Calculates pH(TA, DIC, 25, free scale), pH(initial during TA titration, 25, free scale) and pH(TA, DIC, in-situ temperature, total scale). The following variables are added to the dataset:
     * _talk_ (Total Alkalinity)
