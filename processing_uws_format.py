@@ -21,9 +21,6 @@ df['Time_UTC'] = df['date_time'].dt.time
 # Add flag column
 df['pH_flag'] = 2
 
-# Save as is for internal use
-df.to_csv('./data/SO279_internal_UWS_data.csv', index=False)
-
 # Drop useless columns
 df.drop(columns=[
     'index',
@@ -132,4 +129,4 @@ new_index = [
 df = df.reindex(new_index, axis=1)
 
 # Save subsamples dataset to csv
-df.to_csv('./data/SO279_UWS_data.csv', index=False)
+df.to_csv('./data/SO279_UWS_time_series.csv', index=False)

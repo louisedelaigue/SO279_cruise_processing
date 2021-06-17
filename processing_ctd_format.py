@@ -107,4 +107,4 @@ df = df.reindex(new_index, axis=1)
 df.fillna(-999, inplace=True)
 
 # Save CTD dataset to csv
-df.to_csv('./data/SO279_CTD_data.csv', index=False)
+df.to_csv('./data/SO279_CTD_discrete_samples.csv', index=False)

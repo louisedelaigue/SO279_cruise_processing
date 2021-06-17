@@ -6,7 +6,7 @@ from scipy.interpolate import PchipInterpolator
 df = pd.read_csv('./data/processing/raw_uws_data.csv')
 
 # Import subsamples
-subsamples = pd.read_csv('./data/SO279_internal_subsamples_data.csv')
+subsamples = pd.read_csv('./data/processing/internal_subsamples_data.csv')
 
 # === FAST INCREASES PROCESSING
 # Cut continuous pH data to remove fast, unrealistic pH increases at the 
@@ -70,17 +70,6 @@ subsamples['pH_total_initial_talk_tco2_insitu_temp'] = pyco2.sys(
     total_silicate=subsamples.total_silicate,
     total_ammonia=subsamples.total_ammonia,
 )['pH_total_out']
-
-# === SUBSAMPLES OUTLIERS
-# Remove outliers for pH(TA/DIC)
-# subsamples['zscore'] = abs((subsamples['pH_total_talk_tco2_insitu_temp'] - subsamples['pH_total_talk_tco2_insitu_temp'].mean())/subsamples['pH_total_talk_tco2_insitu_temp'].std(ddof=0))
-# L = subsamples['zscore'] < 2
-# subsamples = subsamples[L]
-
-# # Remove outliers for pH(init elec)
-# subsamples['zscore'] = abs((subsamples['pH_init_talk_total_tco2_insitu_temp'] - subsamples['pH_init_talk_total_tco2_insitu_temp'].mean())/subsamples['pH_init_talk_total_tco2_insitu_temp'].std(ddof=0))
-# L = subsamples['zscore'] < 2
-# subsamples = subsamples[L]
 
 # === pH OFFSET CALCULATION
 # Calculate offset between pH(TA/DIC) and pH(initial_talk)

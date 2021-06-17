@@ -19,7 +19,7 @@ df['Day_UTC'] = df['date_time'].dt.day
 df['Time_UTC'] = df['date_time'].dt.time
 
 # Save as is for internal use
-df.to_csv('./data/SO279_internal_subsamples_data.csv', index=False)
+df.to_csv('./data/processing/internal_subsamples_data.csv', index=False)
 
 # Drop useless columns
 columns = [
@@ -98,4 +98,4 @@ df = df.reindex(new_index, axis=1)
 df.sort_values(by=['Sample_ID'], inplace=True)
 
 # Save subsamples dataset to csv
-df.to_csv('./data/SO279_subsamples_data.csv', index=False)
+df.to_csv('./data/SO279_UWS_discrete_samples.csv', index=False)
