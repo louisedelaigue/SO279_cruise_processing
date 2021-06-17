@@ -1,5 +1,2 @@
 # ignore SMB files
 data/SMB/smb_all_hr.dat
-
-# ignore sst and sal satellite data file
-data/satdat/global-analysis-forecast-phy-001-024_1612963010439.nc
