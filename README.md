@@ -11,6 +11,8 @@ CTD and UWS discrete samples dataset contain respectively 77 measurements (all f
 The short cruise report can be found in the main folder of this repo as _SO279_GPF_20-3_089_SCR.pdf_.
 
 ## Data processing
+All data processing presented in this repo was done by Louise Delaigue and Matthew Humphreys from the NIOZ Royal Netherlands Institute for Sea Research.
+
 Scripts below are used in the processing of CTD and UWS data. Each script's function is briefly highlighted and variables are listed. More details can be found in _methods.docx_ (main folder, to be updated). 
 
 All calculations pertainting to the carbonate system were done using the Python toolbox [PyCO2SYS](https://pyco2sys.readthedocs.io/en/latest/) and default carbonic acid dissociation constants (Sulpis et al., 2020).
