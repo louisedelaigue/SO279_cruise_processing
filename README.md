@@ -45,11 +45,11 @@ Final dataset can be found in _'./data'_ as **SO279_CTD_data.csv**. Dataset incl
 * Ammonim_flag
     
 Processing steps include the following scripts and order:
-1. _processing_ctd_raw.py_: Retrieves CTD data for all Niskins and adds nutrient data.
+1.  _processing_ctd_raw.py_: Retrieves CTD data for all Niskins and adds nutrient data.
 
-2. _processing_vindta.py_: Processes TA and DIC lab analysis. Calculates pH(TA, DIC, 25, free scale), pH(initial during TA titration, 25, free scale) and pH(TA, DIC, in-situ temperature, total scale). The following variables are added to the dataset:
+2.  _processing_vindta.py_: Processes TA and DIC lab analysis. Calculates pH(TA, DIC, 25, free scale), pH(initial during TA titration, 25, free scale) and pH(TA, DIC, in-situ temperature, total scale). The following variables are added to the dataset:
 
-3. _processing_CTD_format.py_: Reorganizes dataset in a csv user-friendly format.
+3.  _processing_CTD_format.py_: Reorganizes dataset in a csv user-friendly format.
 
 ### UWS discrete samples
 Final dataset can be found in _'./data'_ as **SO279_UWS_data.csv**. Dataset includes the sames variables as the CTD discrete samples dataset.
