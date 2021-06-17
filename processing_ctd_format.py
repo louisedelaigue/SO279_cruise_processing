@@ -27,7 +27,8 @@ df['Cruise_ID'] = 'SO279'
 df['Cast_number'] = 1
 
 # Convert date column to datetime object
-df['date'] = pd.to_datetime(df['date'])
+df['date'] = pd.to_datetime(df['date'], format='%d.%m.%Y %H:%M')
+# df['date'] = df['date'].dt.strftime('%Y-%d-%m H%:M%:S%')
 
 # Add year, month, day and time columns
 df['Year_UTC'] = df['date'].dt.year
