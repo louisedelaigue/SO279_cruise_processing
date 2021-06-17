@@ -1,0 +1,143 @@
+994	1	0	START reset all relays
+0	2	0
+0	3	0
+0	4	0
+0	5	0
+0	6	0
+0	7	0
+0	8	0
+0	9	0
+0	10	0
+0	11	0
+0	12	0
+0	13	0
+0	14	0
+0	15	0
+0	17	0
+0	18	0
+0	19	0
+0	20	0
+0	21	0
+0	22	0	END reset all relays
+0	34	15	display "rinsing titration cell"
+1	18	1	open cell valve
+0	20	1	pump OUT (=drain cell) ON		*** CELL DRAIN 1 START
+0	3	1	BigPip.bottom to cell				
+0	4	0	BigPip.top to airpump
+39	22	1	airpump on
+1	22	0	airpump off
+1	20	0	pump OUT (=drain cell) OFF		*** CELL DRAIN 1 END
+0	3	0	BigPip.bottom to fill			
+1	5	1	valve to NaCl				*** CELL RINSE 1 START
+1	19	1	pump IN (=NaCl rinse) ON				
+25	17	1	stirrer on 				
+1	17	0	stirrer off				
+1	19	0	pump IN (=NaCl rinse) OFF		*** CELL RINSE 1 END		
+0	5	0	valve to waste
+1	6	1	switch to clean waste
+33	20	1	pump OUT (=drain cell) ON		*** START CELL DRAIN 2
+0	34	16	display "rinsing big pipette"
+1	1	1	DIC/AT selection valve to AT
+2	8	1	valve 8 to "sample in"
+3	2	1	rinse big pipette partly		*** BIGPIP RINSE 1
+1	8	0	valve 8 to "waste out"	
+1	20	0	pump OUT (=drain cell) OFF		*** END CELL DRAIN 2
+0	6	0	switch to dirty waste
+1	5	1	valve to NaCl
+1	19	1	pump IN (=NaCl rinse) ON		*** CELL RINSE 2 START
+1	17	1	stirrer on
+10	22	1	airpump on, blow out big pipette	*** BIGPIP BLOWOUT 1
+1	22	0	airpump off
+3	8	1	valve 8 to "sample in"			*** BIGPIP RINSE 2
+1	8	0	valve 8 to "waste out"
+10	22	1	airpump on, blow out pipette		*** BIGPIP BLOWOUT 2
+0	22	0	airpump off
+0	17	0	stirrer off
+0	19	0	pump IN (=NaCl rinse) OFF		*** CELL RINSE 2 END
+0	5	0	cell valve to waste
+1	6	1	switch to clean waste
+1	20	1	pump OUT (=drain cell) ON		*** CELL DRAIN 3 START
+1	34	13	"filling big pipette for AT"		*** START FILLING PIPETTE
+1	4	1	pipette top to overflow
+33	8	1	valve 8 to "sample in"
+14	20	0	pump OUT (=drain cell) OFF		*** END CELL DRAIN 3
+1	6	0	switch to dirty waste
+5	7	1	overflow bottom close
+0	2	0	valve 2 off
+1	8	0	valve 8 off				*** END FILLING PIPETTE
+0	1	0	valve 1 off
+30	17	1	stirrer on
+0	17	0	stirrer off
+1	4	0	BigPip.top to airpump
+1	18	0	close cell
+1	3	1	BigPip.bottom to cell
+2	34	14	display "emptying pipette into titration cell"
+35	22	1	airpump on, blow out pipette
+1	22	0	airpump off
+0	7	0	overflow bottom open
+0	3	0	BigPip.bottom to fill
+0	34	17	display "titrating AT"
+1	17	1	stirrer on
+0	28		start TITRATION
+0	34	0	say: "[empty]"
+777	0	0	DIC part:				*** Method starts here! ***************************
+5	15	1	open overpressure line
+4	13	1	V13 to waste
+1	13	0	V13 to condenser
+0	16	10	add acid
+0	16	0	acidpumpoff
+994	34	12	display "rinsing small pipette"		*** CONTINUE (PARALLEL) EXECUTION OF AT COMMANDS***
+0	10	1	Small Pip. bottom to stripper
+25	12	1	N2 to SmallPip.top, blow out.
+0	10	0	SmallPip.bottom to fill		
+20	12	0	N2 to stripper
+5	8	1	valve 8 on				*** LINE RINSE 1 ***
+1	11	1	valve 11 to waste
+2	9	1	valve 9 to small pipette		*** SMALLPIP RINSE 1 ***
+1	8	0	valve 8 to waste
+0	11	0	SmallPip.top to N2
+10	12	1	N2 to SmallPip.top, blow out.		*** SMALLPIP BLOWOUT 1 ***
+1	12	0	N2 to stripper
+0	11	1	SmallPip.top to overflow
+2	8	1	valve 8 sample in			*** SMALLPIP RINSE 2 ***
+1	8	0	valve 8 to waste
+0	11	0	SmallPip.top to N2			
+10	12	1	N2 to SmallPip.top, blow out.		*** SMALLPIP BLOWOUT 2 ***
+1	12	0	N2 to stripper
+0	11	1	SmallPip.top to overflow
+1	34	3	"filling small pipette"
+12	8	1	valve 8 to sample in
+2	7	1	close overflow bottom
+1	9	0	valve 9 to waste
+1	8	0	valve 8 to waste
+0	7	1	close overflow  bottom, wait till "overflow full"
+20	9	0	V9 to waste				*** 20 second wait for temp stabilizing
+0	11	0	SmallPip.top to N2
+0	34	5	"emptying pipette into stripper"
+0	10	1	SmallPip.bottom to stripper
+1	36	0	reset coulometer
+1	12	1	N2 to SmallPip.top, blow out.		*** SMALLPIP BLOWOUT 3 (FINAL) ***
+32	7	0	open overflow bottom
+1	12	0	N2 to stripper
+0	10	0	SmallPip.bottom to fill
+0	34	9	"titrating DIC"
+1	31	0	start DIC titration 
+0	32	0	wait for titration done
+1	15	0	close overpressure line
+0	34	6	"draining stripper"
+24	13	1	V13 to waste
+1	13	0	V13 to condenser
+0	15	1	open overpressure line
+1	14	1	open condenser
+1	14	0	close
+1	14	1	open condenser
+1	14	0	close
+1	14	1	open condenser
+1	14	0	close
+1	14	1	open condenser
+5	14	0	close
+0	16	5	add acid
+0	16	0	acidpumpoff
+1	15	0	close overpressure line
+0	34	0	clear display
+0	30	0	do nothing
