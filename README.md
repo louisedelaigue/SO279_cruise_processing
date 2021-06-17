@@ -58,6 +58,9 @@ Final dataset can be found in _'./data'_ as **SO279_UWS_data.csv**. Dataset incl
 
 2. _processing_vindta.py_: Processes TA and DIC lab analysis for both CTD and UWS discrete samples. Calculates pH(TA, DIC, 25, free scale), pH(initial during TA titration, 25, free scale) and pH(TA, DIC, in-situ temperature, total scale).
 
+3. _processing_subsamples_format.py_: Reorganizes dataset in a csv user-friendly format.
+
+### UWS pH time series
 * _processing_uws_raw.py_: Retrieves raw continuous pH(optode) data from all underway Pyroscience optode pH files. Adds corresponding biogeochemical data from the SMB salinograph on board. Corrects salinity. Estimates TA(est) for the North Atlantic Ocean from salinity and temperature according to Lee et al. (2006). Calculates pH(TA(est), pH(optode), in-situ temperature, total scale). Creates a dataset including the following variables:
     * _filename_
     * _sec_
