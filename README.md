@@ -26,7 +26,7 @@ Further below is a description of all scripts pertaining to the above mentioned 
 3. _processing_ctd_raw.py_
 4. _processing_vindta.py_
 5. _processing_subsamples_format.py_
-6. _processing_CTD_format.py_
+6. _processing_ctd_format.py_
 7. _processing_uws_pH_correction.py_
 8. _processing_uws_format.py_
 
