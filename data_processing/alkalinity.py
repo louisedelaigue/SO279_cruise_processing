@@ -10,7 +10,7 @@ def alkalinity(data):
             + (53.97 * (sss - 35)) 
             + (2.74 * ((sss - 35)**2)) 
             - (1.16 * (sst - 20)) 
-            + (0.040 * ((sst - 20)**2)) 
+            - (0.040 * ((sst - 20)**2)) 
             )
     
     # create new column with results in dataset

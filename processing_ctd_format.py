@@ -39,7 +39,7 @@ df['Time_UTC'] = df['date'].dt.time
 # Drop date column
 df.drop(columns=['date'], axis =1, inplace=True)
 
-# Rename columns with names according to best practises
+# Rename columns with names according to best practices
 rn = {
     'station':'Station_ID',
     'latitude':'Latitude',
@@ -52,7 +52,7 @@ rn = {
     'temperature':'CTDTEMP_ITS90',
     'total_phosphate':'Phosphate',
     'total_silicate':'Silicate',
-    'total_ammonia':'Ammonium',
+    'total_ammonium':'Ammonium',
     'total_nitrate_nitrite':'Nitrate_and_Nitrite',
     'total_nitrite':'Nitrite',
     'total_nitrate':'Nitrate',
@@ -100,6 +100,7 @@ new_index = [
     'Nitrate_and_Nitrite_flag',
     'Ammonium',
     'Ammonium_flag',
+    'pH_initial_talk'
     ]
 df = df.reindex(new_index, axis=1)
 

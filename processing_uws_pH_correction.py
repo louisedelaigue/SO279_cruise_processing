@@ -10,7 +10,7 @@ subsamples = pd.read_csv('./data/processing/internal_subsamples_data.csv')
 
 # === FAST INCREASES PROCESSING
 # Cut continuous pH data to remove fast, unrealistic pH increases at the 
-# beginning of each Pyro file
+# beginning of each Pyro file (beyond 20 min stablization, which was cut off during the initial raw processing)
 # File #2
 L = (df['filename'] == '2020-12-11_163148_NAPTRAM2020') & (df['sec'] < 3000) & (df['pH_insitu_ta_est'] < 8.094)
 df = df[~L]

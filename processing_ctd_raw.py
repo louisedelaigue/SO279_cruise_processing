@@ -12,7 +12,8 @@ for file in file_list:
     fname = "./data/CTD/{}.cnv".format(file)
     data[file] = pd.read_table(fname, encoding="unicode_escape")
     data[file]['station'] = file
-    # only keep one line for each niskin bottle
+    
+    # Only keep one line for each niskin bottle
     data[file] = data[file].groupby(by=["station", "niskin"]).mean().reset_index()
     L = data[file]['niskin'] == 0
     data[file] = data[file][~L]
@@ -32,7 +33,7 @@ ctd_data = ctd_data.sort_values(by=['station', 'niskin'])
 ctd_data['salinity'] = ctd_data[['salinity_a', 'salinity_b']].mean(axis=1)
 ctd_data['temperature'] = ctd_data[['temperature_a', 'temperature_b']].mean(axis=1)
 
-# Drop columns not pertinent to carb chem
+# Drop columns not pertinent to carbonate chemistry
 columns = [
         'salinity_a',
         'salinity_b',
@@ -54,7 +55,7 @@ ctd_data.drop(columns, axis =1, inplace=True)
 ctd_data['niskin'] = ctd_data['niskin'].astype(str)
 ctd_data['station'] = ctd_data['station'].str.replace('STN', '')
 
-# Add nutrients
+# Add silicate and nutrient data
 # === SILICATE
 # Import spreadsheets and create one df
 si1 = pd.read_excel('./data/nutrients/210324-LouiseD-Si-AR1.xlsx', skiprows=6)
@@ -64,7 +65,7 @@ si2 = si2.drop(0)
 all_si = [si1, si2]
 si = pd.concat(all_si).reset_index(drop=True)
 
-# Rename columns with sensisble names
+# Rename columns with sensible names
 rn = {
       "UNIT":"sample",
       "µmol/L":"total_silicate"
@@ -89,13 +90,14 @@ si['sample_names'] = sample_names
 # Drop the column with wrong names
 si.drop('sample', axis =1, inplace=True)
 
-# Create columns for station, niskin and duplicate to match mastersheet
+# Create columns for station, niskin and duplicate to match CTD data
 si['station'] = si['sample_names'].apply(lambda x: x.split("-")[0]).str[-1]
 si['niskin'] = si['sample_names'].apply(lambda x: x.split("-")[1])
 si['duplicate'] = si['sample_names'].apply(lambda x: x.split("-")[2])
 si.drop('sample_names', axis =1, inplace=True)
 
-# Change duplicated row for Station 7 Niskin 22 Duplicate 1.2 (should be 2, typo in original file from analysis)
+# Change duplicated row for Station 7 Niskin 22 Duplicate 1.2 
+# (should be 2, typo in original file from analysis)
 si.loc[si['total_silicate']==0.592, 'duplicate'] = '2'
 
 # === NUTRIENTS
@@ -113,7 +115,7 @@ rn = {
     'METH':'sample',
     'NO3+NO2':'total_nitrate_nitrite',
     'PO4':'total_phosphate',
-    'NH4':'total_ammonia',
+    'NH4':'total_ammonium',
     'NO2':'total_nitrite',
     'NO3':'total_nitrate'
 }
@@ -131,7 +133,7 @@ nuts = nuts[~nuts['sample'].isin(['CRM BU-0899 OCT20',
                                      'UNIT'
                                      ])]
 
-# Rename samples 
+# Rename samples
 sample_list = nuts['sample'].tolist()
 sample_names = []
 for sample in sample_list:
@@ -143,7 +145,7 @@ for sample in sample_list:
 
 nuts['sample_names'] = sample_names
 
-# Create columns for station, niskin and duplicate to match mastersheet
+# Create columns for station, niskin and duplicate to match CTD data
 nuts['station'] = nuts['sample_names'].apply(lambda x: x.split("-")[0]).str[-1]
 nuts['niskin'] = nuts['sample_names'].apply(lambda x: x.split("-")[1])
 nuts['niskin'] = nuts['niskin'].replace({'N':''})
@@ -177,9 +179,21 @@ ctd_data = pd.merge(ctd_data, nut_data, on=['station','niskin'], how='left')
 # Calculate total nitrate for all stations (filling missing 6, 7 and 9)
 ctd_data['total_nitrate'] = ctd_data['total_nitrate_nitrite'] - ctd_data['total_nitrite']
 
-# Drop Niskins not sampled for carbonate chemistry)
+# Drop Niskins not sampled for carbonate chemistryNo documenta
 # ctd_data.dropna(subset=['duplicate'], how='all', inplace=True)
 
+# Calculate density of each sample
+ctd_data['density'] = calk.density.seawater_1atm_MP81(23, ctd_data['salinity'])
+
+# Convert nutrients from umol/L to umol/kg
+ctd_data['total_phosphate'] = ctd_data['total_phosphate'] / ctd_data['density']
+ctd_data['total_ammonium'] = ctd_data['total_ammonium'] / ctd_data['density']
+ctd_data['total_nitrate_nitrite'] = ctd_data['total_nitrate_nitrite'] / ctd_data['density']
+ctd_data['total_nitrite'] = ctd_data['total_nitrite'] / ctd_data['density']
+ctd_data['total_nitrate'] = ctd_data['total_nitrate'] /ctd_data['density']
+ctd_data['total_silicate'] = ctd_data['total_silicate'] / ctd_data['density']
+
+# === QUALITY CONTROL
 # Add flag column
 # Quality flag convention: 2 = acceptable, 3 = questionable, 4 = known bad, 9 = missing value (lab issue)
 ctd_data['Phosphate_flag'] = 2
@@ -295,11 +309,12 @@ for duplicate in dup_list:
     ctd_data_sub.loc[L, 'mean'] = temp['total_nitrite'].mean()
     ctd_data_sub.loc[L, 'diff/mean'] = ctd_data_sub['difference']/ctd_data_sub['mean']
 
-# Distribute flags based on FU and diff/mean in main df
+# Distribute flags based on PN and diff/mean in main df
+# Precision number calculated in separate script
 sample_list = ctd_data_sub['stncode'].tolist()
 for sample in sample_list:
     a = ctd_data_sub.loc[ctd_data_sub['stncode']==sample, 'diff/mean'].values
-    if a > 1.3059930318262205:
+    if a > 1.346392401087416:
         ctd_data.loc[ctd_data['stncode']==sample, 'Nitrite_flag'] = 3
     else:
         ctd_data.loc[ctd_data['stncode']==sample, 'Nitrite_flag'] = 2       
@@ -314,11 +329,11 @@ for duplicate in dup_list:
     ctd_data_sub.loc[ctd_data_sub['dupcode']==duplicate, 'mean'] = temp['total_silicate'].mean()
     ctd_data_sub.loc[ctd_data_sub['dupcode']==duplicate, 'diff/mean'] = ctd_data_sub['difference']/ctd_data_sub['mean']
 
-# Distribute flags based on FU and diff/mean in main df
+# Distribute flags based on PN and diff/mean in main df
 sample_list = ctd_data_sub['stncode'].tolist()
 for sample in sample_list:
     a = ctd_data_sub.loc[ctd_data_sub['stncode']==sample, 'diff/mean'].values
-    if a > 0.04007795586005633:
+    if a > 0.040382900391576666:
         ctd_data.loc[ctd_data['stncode']==sample, 'Silicate_flag'] = 3
     else:
         ctd_data.loc[ctd_data['stncode']==sample, 'Silicate_flag'] = 2
@@ -333,11 +348,11 @@ for duplicate in dup_list:
     ctd_data_sub.loc[ctd_data_sub['dupcode']==duplicate, 'mean'] = temp['total_nitrate_nitrite'].mean()
     ctd_data_sub.loc[ctd_data_sub['dupcode']==duplicate, 'diff/mean'] = ctd_data_sub['difference']/ctd_data_sub['mean']
 
-# Distribute flags based on FU and diff/mean in main df
+# Distribute flags based on PN and diff/mean in main df
 sample_list = ctd_data_sub['stncode'].tolist()
 for sample in sample_list:
     a = ctd_data_sub.loc[ctd_data_sub['stncode']==sample, 'diff/mean'].values
-    if a > 1.0435279947259386:
+    if a > 1.0644479832449498:
         ctd_data.loc[ctd_data['stncode']==sample, 'Nitrate_and_Nitrite_flag'] = 3
     else:
         ctd_data.loc[ctd_data['stncode']==sample, 'Nitrate_and_Nitrite_flag'] = 2
@@ -348,47 +363,36 @@ dup_list = ctd_data_sub['dupcode'].unique().tolist()
 for duplicate in dup_list:
     L = ctd_data_sub['dupcode']==duplicate
     temp = ctd_data_sub[L]
-    ctd_data_sub.loc[ctd_data_sub['dupcode']==duplicate, 'difference'] = np.abs(np.diff(temp['total_nitrate_nitrite']))[0]
-    ctd_data_sub.loc[ctd_data_sub['dupcode']==duplicate, 'mean'] = temp['total_nitrate_nitrite'].mean()
+    ctd_data_sub.loc[ctd_data_sub['dupcode']==duplicate, 'difference'] = np.abs(np.diff(temp['total_ammonium']))[0]
+    ctd_data_sub.loc[ctd_data_sub['dupcode']==duplicate, 'mean'] = temp['total_ammonium'].mean()
     ctd_data_sub.loc[ctd_data_sub['dupcode']==duplicate, 'diff/mean'] = ctd_data_sub['difference']/ctd_data_sub['mean']
 
-# Distribute flags based on FU and diff/mean in main df
+# Distribute flags based on PN and diff/mean in main df
 sample_list = ctd_data_sub['stncode'].tolist()
 for sample in sample_list:
     a = ctd_data_sub.loc[ctd_data_sub['stncode']==sample, 'diff/mean'].values
-    if a > 1.2793724837930212:
+    if a > 1.3213859347936425:
         ctd_data.loc[ctd_data['stncode']==sample, 'Ammonium_flag'] = 3
     else:
         ctd_data.loc[ctd_data['stncode']==sample, 'Ammonium_flag'] = 2
 
 # Distribute nans for flags where there's no nutrient data
 ctd_data.loc[ctd_data['total_phosphate'].isnull(), 'Phosphate_flag'] = np.nan
-ctd_data.loc[ctd_data['total_ammonia'].isnull(), 'Ammonium_flag'] = np.nan
+ctd_data.loc[ctd_data['total_ammonium'].isnull(), 'Ammonium_flag'] = np.nan
 ctd_data.loc[ctd_data['total_nitrate_nitrite'].isnull(), 'Nitrate_and_Nitrite_flag'] = np.nan
 ctd_data.loc[ctd_data['total_nitrite'].isnull(), 'Nitrite_flag'] = np.nan
 ctd_data.loc[ctd_data['total_nitrate'].isnull(), 'Nitrate_flag'] = np.nan
 ctd_data.loc[ctd_data['total_silicate'].isnull(), 'Silicate_flag'] = np.nan
-
-# Calculate density of each sample
-ctd_data['density'] = calk.density.seawater_1atm_MP81(ctd_data['temperature'], ctd_data['salinity'])
-
-# Convert nutrients from umol/L to umol/kg
-ctd_data['total_phosphate'] = ctd_data['total_phosphate'] / ctd_data['density']
-ctd_data['total_ammonia'] = ctd_data['total_ammonia'] / ctd_data['density']
-ctd_data['total_nitrate_nitrite'] = ctd_data['total_nitrate_nitrite'] / ctd_data['density']
-ctd_data['total_nitrite'] = ctd_data['total_nitrite'] / ctd_data['density']
-ctd_data['total_nitrate'] = ctd_data['total_nitrate'] /ctd_data['density']
-ctd_data['total_silicate'] = ctd_data['total_silicate'] / ctd_data['density']
 
 # Ensure all data except stncode are numbers
 ctd_data['station'] = pd.to_numeric(ctd_data['station'])
 ctd_data['niskin'] = pd.to_numeric(ctd_data['niskin'])
 ctd_data['total_nitrate_nitrite'] = pd.to_numeric(ctd_data['total_nitrate_nitrite'])
 ctd_data['total_phosphate'] = pd.to_numeric(ctd_data['total_phosphate'])
-ctd_data['total_ammonia'] = pd.to_numeric(ctd_data['total_ammonia'])
+ctd_data['total_ammonium'] = pd.to_numeric(ctd_data['total_ammonium'])
 ctd_data['total_nitrite'] = pd.to_numeric(ctd_data['total_nitrite'])
 ctd_data['total_nitrate'] = pd.to_numeric(ctd_data['total_nitrate'])
 ctd_data['duplicate'] = pd.to_numeric(ctd_data['duplicate'])
 
 # Save file to .csv
-ctd_data.to_csv('./data/processing/raw_ctd_data.csv', index=False)
+ctd_data.to_csv('./data/processing/processed_ctd_data.csv', index=False)

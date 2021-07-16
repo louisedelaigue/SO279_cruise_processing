@@ -24,7 +24,7 @@ for meta in [
     "alkalinity_certified",
     "total_phosphate",
     "total_silicate",
-    "total_ammonia",
+    "total_ammonium",
 ]:
     dbs[meta] = np.nan
 
@@ -37,7 +37,7 @@ dbs.loc[dbs.crm_batch_189, "alkalinity_certified"] = 2205.26  # micromol/kg-sw
 dbs.loc[dbs.crm_batch_189, "salinity"] = 33.494
 dbs.loc[dbs.crm_batch_189, "total_phosphate"] = 0.45  # micromol/kg-sw
 dbs.loc[dbs.crm_batch_189, "total_silicate"] = 2.1  # micromol/kg-sw
-dbs.loc[dbs.crm_batch_189, "total_ammonia"] = 0  # micromol/kg-sw
+dbs.loc[dbs.crm_batch_189, "total_ammonium"] = 0  # micromol/kg-sw
 
 # ---------------------------------------------------------vvv- UPDATE BELOW HERE! -vvv-
 # Assign temperature = 25.0 for VINDTA analysis temperature
@@ -52,7 +52,7 @@ dbs.loc[np.isin(dbs.bottle, ["CRM-189-0285-3"]), "file_good"] = False
 
 # === CTD DATA
 # Import CTD metadata
-ctd_data = pd.read_csv('./data/processing/raw_ctd_data.csv')
+ctd_data = pd.read_csv('./data/processing/processed_ctd_data.csv')
 
 # Extract station, niskin and duplicate numbers from bottle names in dbs file
 sample_list = dbs['bottle'].tolist()
@@ -83,7 +83,7 @@ dbs['stncode'] = dbs['station_r'] + dbs['niskin_r'] + dbs['duplicate']
 dbs['stncode'] = dbs['stncode'].astype(str)
 dbs.replace(to_replace='nannannan', value=np.nan, inplace=True)
 
-# Remove bottle STN4N13-1 from TA/DIC sample list as bottle broke during sample handling on ship
+# Remove bottle STN4N13-1 from TA/DIC sample list as bottle broke during sample processing on ship
 ctd_data['stncode'] = ctd_data['stncode'].astype(str)
 ctd_data['stncode'] = ctd_data['stncode'].map(lambda x: x.rstrip('.0'))
 code_list = ctd_data['stncode']
@@ -96,7 +96,6 @@ for code in code_list:
         dbs.loc[dbs['stncode']==code, 'salinity'] = ctd_data.loc[ctd_data['stncode']==code, 'salinity'].values
         dbs.loc[dbs['stncode']==code, 'total_silicate'] = ctd_data.loc[ctd_data['stncode']==code, 'total_silicate'].values
         dbs.loc[dbs['stncode']==code, 'total_phosphate'] = ctd_data.loc[ctd_data['stncode']==code, 'total_phosphate'].values
-        dbs.loc[dbs['stncode']==code, 'total_ammonia'] = ctd_data.loc[ctd_data['stncode']==code, 'total_ammonia'].values
 
 # === SUBSAMPLES
 # Import subsamples metadata
@@ -108,14 +107,13 @@ for subsample in subsamples_list:
     dbs.loc[dbs['bottle']==subsample, 'salinity'] = subsamples.loc[subsamples['sample_id']==subsample, 'salinity'].values
     dbs.loc[dbs['bottle']==subsample, 'total_phosphate'] = subsamples.loc[subsamples['sample_id']==subsample, 'total_phosphate'].values
     dbs.loc[dbs['bottle']==subsample, 'total_silicate'] = subsamples.loc[subsamples['sample_id']==subsample, 'total_silicate'].values
-    dbs.loc[dbs['bottle']==subsample, 'total_ammonia'] = subsamples.loc[subsamples['sample_id']==subsample, 'total_ammonia'].values
-    
+  
 # === JUNKS
 # Assign metadata for junks
 dbs['salinity'] = dbs['salinity'].fillna(35)
 dbs['total_phosphate'] = dbs['total_phosphate'].fillna(0)
 dbs['total_silicate'] = dbs['total_silicate'].fillna(0)
-dbs['total_ammonia'] = dbs['total_ammonia'].fillna(0)
+dbs['total_ammonium'] = dbs['total_ammonium'].fillna(0)
 
 # Assign alkalinity metadata
 dbs["analyte_volume"] = 95.939  # TA pipette volume in ml
@@ -193,7 +191,6 @@ dbs["pH_alk_dic_25"] = pyco2.sys(
     salinity=dbs.salinity.to_numpy(),
     total_phosphate=dbs.total_phosphate.to_numpy(),
     total_silicate=dbs.total_silicate.to_numpy(),
-    total_ammonia=dbs.total_ammonia.to_numpy(),
 )["pH_free"]
 
 # Plot pH comparison
@@ -252,7 +249,7 @@ dbs.loc[dbs['bottle'] == 'CCRM-189-0963-1', 'flag_talk'] = 4     # bad value
 dbs.loc[dbs['bottle'] == '13a', 'flag_talk'] = 9                 # TA didn't fill enough, bottle popped
 dbs.loc[dbs['bottle'] == 'SOS062', 'flag_talk'] = 9              # TA didn't fill enough, bottle popped
 
-#%% === SUBSAMPLES PROCESSING
+# === SUBSAMPLES PROCESSING
 # == ALKALINITY
 # Create sub dataframe to hold subsampled alkalinity duplicates
 subsamples_data_talk = pd.DataFrame()
@@ -439,7 +436,7 @@ for duplicate in bad_duplicates:
 
 # Calculate precision number for DIC
 P_subsample_tco2 = (np.sqrt(np.pi)/2) * (np.abs(subsamples_data_tco2['difference'].mean()))
-print('Precision for subsamples dic is {}.'.format(round(P_subsample_tco2, 3)))
+print('Precision for subsamples DIC is {}.'.format(round(P_subsample_tco2, 3)))
 # /!\ P prior to processing is 4.426
 
 # Plot DIC vs. depth to check for outliers
@@ -491,7 +488,7 @@ ax.set_xlabel('DIC')
 ax.set_ylabel('Depth (m)')
 ax.set_title('Final processing for subsamples DIC')
 
-#%% == FINAL DATASET
+# == FINAL DATASET
 # Add sample column
 subsamples['dupcode'] = np.nan
 for subsample in subsamples_list:
@@ -506,7 +503,6 @@ subsamples.loc[subsamples['sample_id']=='1b', 'date_time'] = subsamples.loc[subs
 
 # Groupby subsample dataset to keep one row per sample
 subsamples = subsamples.groupby('date_time', as_index=False).mean()
-
 
 # Add DIC data
 subsamples = subsamples.merge(subsamples_data_tco2_grouped, how='inner', left_on='dupcode', right_on='sample')
@@ -533,8 +529,7 @@ rn = {
 
 subsamples.rename(rn, axis=1, inplace=True)
 
-
-#%% === CTD PROCESSING
+# === CTD PROCESSING
 # ALKALINITY
 # Create sub dataframe to hold CTD alkalinity duplicates
 ctd_data_talk = pd.DataFrame()
@@ -544,6 +539,7 @@ ctd_data_talk['stncode'] = ctd_data['stncode']
 ctd_data_talk['depth'] = ctd_data['depth']
 ctd_data_talk['talk'] = np.nan
 ctd_data_talk['flag_talk'] = np.nan
+ctd_data_talk['pH_initial_talk'] = np.nan
 ctd_data_talk['difference'] = np.nan
 ctd_data_talk['number_of_duplicates'] = np.nan
 
@@ -551,6 +547,7 @@ ctd_data_talk['number_of_duplicates'] = np.nan
 for code in code_list:
     ctd_data_talk.loc[ctd_data_talk['stncode']==code, 'talk'] =  dbs.loc[dbs['stncode']==code, 'alkalinity'].values
     ctd_data_talk.loc[ctd_data_talk['stncode']==code, 'flag_talk'] = dbs.loc[dbs['stncode']==code, 'flag_talk'].values
+    ctd_data_talk.loc[ctd_data_talk['stncode']==code, 'pH_initial_talk'] = dbs.loc[dbs['stncode']==code, 'pH_initial'].values
 
 # Compute differences for each duplicate pair
 ctd_data_talk['station'] = ctd_data_talk['station'].astype(str)

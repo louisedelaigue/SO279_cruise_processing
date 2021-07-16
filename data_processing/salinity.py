@@ -60,6 +60,7 @@ def salinity(data):
     # L = df['smb_name'] == 'SMB_A'
     df['salinity'] = np.nan
     
+    # Add corrected salinity value to df as a function of pump name
     pump_name = df['smb_name'].unique().tolist()
     for name in pump_name:
         if name == 'SMB_A':

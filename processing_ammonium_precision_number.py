@@ -1,7 +1,7 @@
 import pandas as pd, numpy as np
 
 # Import underway discrete samples
-df = pd.read_csv('./data/processing/processed_uws_subsamples.csv')
+df = pd.read_csv('./data/processing/PN_uws_subsamples.csv')
 
 # Create dupcode column
 df_list = df['sample_id'].tolist()
@@ -22,9 +22,9 @@ for sample in sample_list:
     df.loc[df['dupcode']==sample, 'mean'] = temp['total_ammonia'].mean()
     df.loc[df['dupcode']==sample, 'diff/mean'] = df['difference']/df['mean']
     
-# Compute FU number
+# Compute PN number
 average = df['diff/mean'].mean()
-FU = average * 3
-print(FU)
+PN = average * 3
+print(PN)
 
-# FU = 1.2793724837930212
+# FU = 1.3213859347936425
