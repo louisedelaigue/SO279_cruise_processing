@@ -1,6 +1,6 @@
-[![DOI](https://zenodo.org/badge/377739875.svg)](https://zenodo.org/badge/latestdoi/377739875)
-
 # Data processing for SO279 cruise
+
+[![DOI](https://zenodo.org/badge/377739875.svg)](https://zenodo.org/badge/latestdoi/377739875)
 
 <img src=Capture.JPG width="500" height="500"/>
 
