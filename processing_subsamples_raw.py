@@ -40,7 +40,7 @@ cont['date_time'] = pd.to_datetime(cont['date_time'])
 # Reindex sub_points so that date_time matches cont(date_time)
 nearest = cont.set_index('date_time').reindex(subsamples.set_index('date_time').index, method='nearest').reset_index()
 
-# Get the closest salinity and temperature value from continuous 
+# Get the closest insitu salinity and temperature value from continuous 
 # measurements dataset
 point_location = subsamples['date_time'].tolist()
 for location in point_location:
@@ -83,7 +83,7 @@ nut_data["sample_id"] = nut_data.sample_id.str.lower()
 
 # Add nutrient data to subsamples
 subsamples['total_phosphate'] = np.nan
-subsamples['total_ammonia'] = np.nan
+subsamples['total_ammonium'] = np.nan
 subsamples['total_silicate'] = np.nan
 subsamples['total_nitrate_nitrite'] = np.nan
 subsamples['total_nitrite'] = np.nan
@@ -91,7 +91,7 @@ subsamples['total_nitrite'] = np.nan
 sample_list = subsamples['sample_id'].tolist()
 for sample in sample_list:
     subsamples.loc[subsamples['sample_id']==sample, 'total_phosphate'] = nut_data.loc[nut_data['sample_id']==sample, 'PO4'].values
-    subsamples.loc[subsamples['sample_id']==sample, 'total_ammonia'] = nut_data.loc[nut_data['sample_id']==sample, 'NH4'].values
+    subsamples.loc[subsamples['sample_id']==sample, 'total_ammonium'] = nut_data.loc[nut_data['sample_id']==sample, 'NH4'].values
     subsamples.loc[subsamples['sample_id']==sample, 'total_silicate'] = nut_data.loc[nut_data['sample_id']==sample, 'Si'].values
     subsamples.loc[subsamples['sample_id']==sample, 'total_nitrate_nitrite'] = nut_data.loc[nut_data['sample_id']==sample, 'NO3_NO2'].values
     subsamples.loc[subsamples['sample_id']==sample, 'total_nitrite'] = nut_data.loc[nut_data['sample_id']==sample, 'NO2'].values
@@ -104,7 +104,7 @@ subsamples['density'] = calk.density.seawater_1atm_MP81(23, subsamples['salinity
 
 # Convert nutrients from umol/L to umol/kg
 subsamples['total_phosphate'] = subsamples['total_phosphate'] / subsamples['density']
-subsamples['total_ammonia'] = subsamples['total_ammonia'] / subsamples['density']
+subsamples['total_ammonium'] = subsamples['total_ammonium'] / subsamples['density']
 subsamples['total_nitrate_nitrite'] = subsamples['total_nitrate_nitrite'] / subsamples['density']
 subsamples['total_nitrite'] = subsamples['total_nitrite'] / subsamples['density']
 subsamples['total_nitrate'] = subsamples['total_nitrate'] /subsamples['density']
@@ -249,7 +249,7 @@ for sample in sample_list:
 
 # Distribute nans for flags where there's no nutrient data
 subsamples.loc[subsamples['total_phosphate'].isnull(), 'Phosphate_flag'] = np.nan
-subsamples.loc[subsamples['total_ammonia'].isnull(), 'Ammonium_flag'] = np.nan
+subsamples.loc[subsamples['total_ammonium'].isnull(), 'Ammonium_flag'] = np.nan
 subsamples.loc[subsamples['total_nitrate_nitrite'].isnull(), 'Nitrate_and_Nitrite_flag'] = np.nan
 subsamples.loc[subsamples['total_nitrite'].isnull(), 'Nitrite_flag'] = np.nan
 subsamples.loc[subsamples['total_nitrate'].isnull(), 'Nitrate_flag'] = np.nan

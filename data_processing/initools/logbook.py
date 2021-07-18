@@ -44,14 +44,14 @@ def logbook(data_dict, file_list):
     # in UWS seawater - after optode stabilization, values look fine 27/12 - 9h30ish,
     # VTD turned the pump off without telling me
     # running a CRM6 as a sample to try and estimate drift [NEXT FILE]
-    # data real data only up to 511263 seconds
+    # real data only up to 511263 seconds
     L = data_dict['2020-12-21_112915_NAPTRAM20206'].sec <= 511263
     data_dict['2020-12-21_112915_NAPTRAM20206'] = data_dict['2020-12-21_112915_NAPTRAM20206'][L]
     
     # file 8 - 2020-12-27_101200_NAPTRAM2020CRM6 - VTD turned pump off
     # this file is a unique CRM to try and estimate drift in previous file
     
-    # file9 - 2020-12-28_151321_NAPTRAM20207 - in pH2 after 20h40 on 30/12
+    # file 9 - 2020-12-28_151321_NAPTRAM20207 - in pH2 after 20h40 on 30/12
     # data real data only up to 195991 seconds
     L = data_dict['2020-12-28_151321_NAPTRAM20207'].sec <= 195991
     data_dict['2020-12-28_151321_NAPTRAM20207'] = data_dict['2020-12-28_151321_NAPTRAM20207'][L]

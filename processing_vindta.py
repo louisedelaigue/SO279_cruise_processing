@@ -221,7 +221,7 @@ CRMs = pd.concat([dbs['bottle'][L],
                     dbs['titrant_molinity_here'][L]],
                     axis=1)
 
-# Modify bottle name typos in dbs
+# Correct bottle name typos in dbs
 dbs.loc[dbs['bottle']=='27b2', 'bottle'] = '27b'
 dbs.loc[dbs['bottle']=='STN6N23-2_2', 'bottle'] = 'STN6N23-2' # twisted line
 dbs.loc[dbs['bottle']=='STN3N07-2_2', 'bottle'] = 'STN3N07-2' # twisted line

@@ -48,7 +48,7 @@ rn = {
     'temperature':'Temperature',
     'total_phosphate':'Phosphate',
     'total_silicate':'Silicate',
-    'total_ammonia':'Ammonium',
+    'total_ammonium':'Ammonium',
     'total_nitrate_nitrite':'Nitrate_and_Nitrite',
     'total_nitrite':'Nitrite',
     'total_nitrate':'Nitrate',

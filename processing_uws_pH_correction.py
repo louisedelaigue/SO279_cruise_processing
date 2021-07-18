@@ -10,7 +10,7 @@ subsamples = pd.read_csv('./data/processing/internal_subsamples_data.csv')
 
 # === FAST INCREASES PROCESSING
 # Cut continuous pH data to remove fast, unrealistic pH increases at the 
-# beginning of each Pyro file (beyond 20 min stablization, which was cut off during the initial raw processing)
+# beginning of each PyroScience file (beyond 20 min stablization, which was cut off during the initial raw processing)
 # File #2
 L = (df['filename'] == '2020-12-11_163148_NAPTRAM2020') & (df['sec'] < 3000) & (df['pH_insitu_ta_est'] < 8.094)
 df = df[~L]
@@ -43,7 +43,7 @@ for location in point_location:
     subsamples.loc[subsamples['date_time']==location, 'pH_optode'] = subsamples['date_time'].map(nearest.set_index('date_time')['pH_insitu_ta_est'])
 
 # === pH CALCULATION AND CONVERSION
-# Calculate subsamples pH(TA/DIC) at insitu temperature
+# Calculate subsamples pH(TA/DIC) at insitu temperature and pressure
 subsamples['pH_total_talk_tco2_insitu_temp'] = pyco2.sys(
     subsamples.talk,
     subsamples.tco2,
@@ -51,12 +51,13 @@ subsamples['pH_total_talk_tco2_insitu_temp'] = pyco2.sys(
     2,
     salinity=subsamples.salinity,
     temperature_out=subsamples.temperature,
+    pressure_out=3,
     total_phosphate=subsamples.total_phosphate,
     total_silicate=subsamples.total_silicate,
-    total_ammonia=subsamples.total_ammonia,
 )['pH_total_out']
 
-# Recalculate pH(initial_talk) at insitu temperature using DIC 
+# Recalculate pH(initial_talk) at insitu temperature and pressure
+# using TA and DIC 
 # and convert from free scale to total scale
 subsamples['pH_total_initial_talk_tco2_insitu_temp'] = pyco2.sys(
     subsamples.pH_initial_talk,
@@ -66,9 +67,9 @@ subsamples['pH_total_initial_talk_tco2_insitu_temp'] = pyco2.sys(
     opt_pH_scale=3,
     salinity=subsamples.salinity,
     temperature_out=subsamples.temperature,
+    pressure_out=3,
     total_phosphate=subsamples.total_phosphate,
     total_silicate=subsamples.total_silicate,
-    total_ammonia=subsamples.total_ammonia,
 )['pH_total_out']
 
 # === pH OFFSET CALCULATION
@@ -105,4 +106,4 @@ for file in file_list:
 
 # Save UWS continuous pH dataset
 df.to_csv('./data/processing/processed_uws_data.csv', index=False)
-# subsamples.to_csv('./data/processing/subsamples_pH_correction.csv', index=False)
+subsamples.to_csv('./data/processing/subsamples_pH_correction.csv', index=False)
