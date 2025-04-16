@@ -1,7 +1,9 @@
 import pandas as pd
 
 # Import continuous pH data 
-df = pd.read_csv('./data/processing/processed_uws_data.csv')
+# df = pd.read_csv('./data/processing/processed_uws_data.csv')
+df = pd.read_csv('./data/processing/processed_uws_data_with_uncertainty_bootstrapping.csv')
+
 
 # Add EXPOCODE column
 df['EXPOCODE'] = '06SN20201204'
@@ -82,7 +84,8 @@ df.drop(columns=[
     'ta_est',
     'pH_insitu_ta_est',
     'pchip_pH_difference',
-    'SMA'],
+    # 'SMA'
+    ],
     axis=1,
     inplace=True)
 
@@ -94,7 +97,8 @@ rn = {
       'SBE38_water_temp':'Temperature',
       'salinity':'Salinity',
       'flag_salinity':'Salinity_flag',
-      'pH_optode_corrected':'pH_TS_measured (optode)'
+      'pH_optode_corrected':'pH_TS_measured (optode)',
+      'pH_optode_corrected_RMSE':'pH_TS_measured (optode) uncertainty'
       }
 df.rename(rn, axis=1, inplace=True)
 
@@ -123,10 +127,12 @@ new_index = [
     'Salinity',
     'Salinity_flag',
     'pH_TS_measured (optode)',
+    'pH_TS_measured (optode) uncertainty',
     'pH_flag'
     
     ]
 df = df.reindex(new_index, axis=1)
 
 # Save subsamples dataset to csv
-df.to_csv('./data/SO279_UWS_time_series.csv', index=False)
+# df.to_csv('./data/SO279_UWS_time_series.csv', index=False)
+df.to_csv('./data/SO279_UWS_time_series_uncertainty.csv', index=False)

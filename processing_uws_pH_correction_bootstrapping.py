@@ -1,16 +1,13 @@
-import pandas as pd
-import numpy as np
+import pandas as pd, numpy as np
+import PyCO2SYS as pyco2
 from scipy.interpolate import PchipInterpolator
-import PyCO2SYS as pyco2 
 import matplotlib.pyplot as plt
 
-# Load data
+# Import UWS continuous pH data
 df = pd.read_csv('./data/processing/raw_uws_data.csv')
-subsamples = pd.read_csv('./data/processing/internal_subsamples_data.csv')
 
-# Convert date_time columns to datetime objects for both datasets
-df['date_time'] = pd.to_datetime(df['date_time'])
-subsamples['date_time'] = pd.to_datetime(subsamples['date_time'])
+# Import subsamples
+subsamples = pd.read_csv('./data/processing/processed_vindta_subsamples_with_uncertainty.csv')
 
 # === FAST INCREASES PROCESSING
 # Cut continuous pH data to remove fast, unrealistic pH increases at the 
@@ -102,234 +99,104 @@ df['pH_optode_corrected'] = df['pH_insitu_ta_est'] - df['pchip_pH_difference']
 L = (df['filename'] == '2020-12-20_182318_NAPTRAM20205') & (df['pH_optode_corrected'] < 8.07278)
 df = df[~L]
 
+# Bootstrap analysis for uncertainty estimation
+n_iterations = 100
+bootstrapped_ph_lists = []
 
-# Initialize a DataFrame to hold bootstrapped uncertainties
-df['pH_uncertainty'] = np.nan
+for iteration in range(n_iterations):
+    # Sample a fraction of the subsamples DataFrame
+    sampled_subsamples = subsamples.sample(frac=0.5, replace=True)
 
-# Perform bootstrapping for the entire dataset
-n_iterations = 1000
-bootstrapped_pH_values = []
+    # Introduce variability within RMSE
+    sampled_subsamples['pH_real_TA_tCO2_adjusted'] = sampled_subsamples['pH_real_TA_tCO2'] + np.random.normal(0, sampled_subsamples['RMSE_pH_TA_tCO2'], size=len(sampled_subsamples))
+    sampled_subsamples['pH_real_initial_talk_tCO2_adjusted'] = sampled_subsamples['pH_real_initial_talk_tCO2'] + np.random.normal(0, sampled_subsamples['RMSE_pH_pH_initial_talk_tCO2'], size=len(sampled_subsamples))
 
-# Get indices of subsamples
-subsample_indices = subsamples.index.tolist()
+    # Recalculate offsets and corrections
+    sampled_subsamples['offset'] = abs(sampled_subsamples['pH_real_TA_tCO2_adjusted'] - sampled_subsamples['pH_real_initial_talk_tCO2_adjusted'])
+    offset = sampled_subsamples['offset'].mean()
+    sampled_subsamples['pH_real_initial_talk_tCO2_adjusted_corr'] = sampled_subsamples['pH_real_initial_talk_tCO2_adjusted'] + offset
 
-# Check if there are at least two subsamples to perform interpolation
-if len(subsamples) > 1:
-    for iteration in range(n_iterations):
-        # Randomly sample a subset of subsample indices, excluding index 0
-        sampled_indices = np.random.choice(subsample_indices[1:], size=int(0.5 * (len(subsample_indices)-1)), replace=False)
-        # Add index 0 to the sampled indices
-        sampled_indices = np.concatenate(([subsample_indices[0]], sampled_indices))
-        
-        print("Sampled indices:", sampled_indices)  # Print sampled indices
-        
-        # Get the corresponding subsamples
-        bootstrapped_subsamples = subsamples.loc[sampled_indices].sort_values(by='date_time')
-        
-        # Ensure that at least two samples are present after sampling
-        if len(bootstrapped_subsamples) > 1:
-            # Perform interpolation
-            interp = PchipInterpolator(bootstrapped_subsamples['date_time'].astype(np.int64), bootstrapped_subsamples['diff'], extrapolate=False)
-            df['pchip_pH_difference_temp'] = interp(df['date_time'].astype(np.int64))
+    sampled_subsamples['diff'] = abs(sampled_subsamples['pH_real_initial_talk_tCO2_adjusted_corr'] - sampled_subsamples['pH_optode'])
 
-            # Calculate and store the corrected pH values
-            df['pH_optode_corrected_temp'] = df['pH_insitu_ta_est'] - df['pchip_pH_difference_temp']
-            bootstrapped_pH_values.append(df['pH_optode_corrected_temp'].values)
+    # Remove where above difference is nan (PCHIP requirement)
+    sampled_subsamples = sampled_subsamples.dropna(subset=['diff'])
 
-    # Calculate uncertainty as the standard deviation across bootstrapped iterations
-    if bootstrapped_pH_values:
-        pH_uncertainty = np.std(np.column_stack(bootstrapped_pH_values), axis=1)
-        df['pH_uncertainty'] = pH_uncertainty
-else:
-    print("Not enough subsamples for bootstrapping.")
-
-
+    # Interpolate using PCHIP
+    # Drop duplicate timestamps
+    sampled_subsamples = sampled_subsamples.drop_duplicates(subset='date_time')
     
-# === SIMPLE MOVING AVERAGE
-# Compute simple moving average (SMA) over period of 30 minutes
-df["SMA"] = df["pH_optode_corrected"].rolling(60, min_periods=1).mean()
-df["SMA_uncertainty"] = df["pH_uncertainty"].rolling(60, min_periods=1).mean()
+    # Sort by date_time
+    sampled_subsamples = sampled_subsamples.sort_values(by='date_time')
 
-# Save the results
-# df.to_csv('./data/processing/processed_uws_data_with_uncertainty.csv', index=False)
-# subsamples.to_csv('./data/processing/subsamples_pH_correction_with_uncertainty.csv', index=False)
+    interp_obj = PchipInterpolator(sampled_subsamples['date_time'], sampled_subsamples['diff'], extrapolate=False)
+    df_iteration = df.copy()
+    df_iteration['pchip_pH_difference'] = interp_obj(df_iteration['date_time'])
+    df_iteration['pH_optode_corrected'] = df['pH_insitu_ta_est'] - df_iteration['pchip_pH_difference']
 
-print("Processing and uncertainty estimation completed.")
+    # Append the series to the list
+    bootstrapped_ph_lists.append(df_iteration['pH_optode_corrected'].rename(f'iteration_{iteration}'))
 
-# Create plot
-fig, ax = plt.subplots(figsize=(6, 4), dpi=300)
+# Concatenate all data into the DataFrame at once after the loop
+bootstrapped_ph_values = pd.concat(bootstrapped_ph_lists, axis=1)
 
-# Plotting the uncorrected and corrected pH values along with uncertainties
-L = df["SMA"].notnull()
-ax.scatter(df["date_time"][L], df["pH_insitu_ta_est"][L], s=0.1, label="Uncorrected pH", color='xkcd:light pink', alpha=0.6)
-ax.scatter(df["date_time"][L], df["SMA"][L], s=0.1, label="Corrected pH", color='b', alpha=0.6)
-ax.fill_between(df["date_time"][L], df["SMA"][L] - (df["SMA_uncertainty"][L] +0), df["SMA"][L] + (df["SMA_uncertainty"][L] + 0), color='b', alpha=0.2)
+# Compute mean and standard deviation of corrected pH values
+df['pH_optode_corrected_RMSE'] = np.sqrt((bootstrapped_ph_values.subtract(df['pH_optode_corrected'], axis=0) ** 2).mean(axis=1))
+
+# Save the DataFrame with corrected pH values and uncertainty
+# df.to_csv('./data/processing/uws_data_with_corrected_pH.csv')
+df.to_csv('./data/processing/processed_uws_data_with_uncertainty_bootstrapping.csv')
+
+#%% === Plotting
+# Create figure
+fig, ax = plt.subplots(figsize=(10, 6), dpi=300)
+
+# Plot uncorrected and corrected pH with simple moving average
+L = df["pH_optode_corrected"].notnull()
+df_filtered = df[L]
+
+# Function to find gaps in datetime series
+def find_gaps(data, threshold=60):
+    gaps = np.where(np.diff(data) > np.timedelta64(threshold, 'm'))[0] + 1
+    return gaps
+
+# Split data into continuous segments
+continuous_segments = np.split(df_filtered, find_gaps(df_filtered['date_time'].values))
+
+# Plot each continuous segment separately
+for segment in continuous_segments:
+    ax.scatter(segment["date_time"], segment["pH_insitu_ta_est"], s=0.1, label="Uncorrected pH", color='xkcd:light pink', alpha=0.6)
+    ax.scatter(segment["date_time"], segment["pH_optode_corrected"].rolling(60, min_periods=1).mean(), s=0.1, label="Corrected pH", color='b', alpha=0.6)
+    ax.fill_between(segment["date_time"], 
+                    segment["pH_optode_corrected"].rolling(60, min_periods=1).mean() - segment["pH_optode_corrected_RMSE"], 
+                    segment["pH_optode_corrected"].rolling(60, min_periods=1).mean() + segment["pH_optode_corrected_RMSE"], 
+                    color='b', alpha=0.2)
+
+# Scatter plot for subsamples
 ax.scatter(subsamples["date_time"], subsamples["pH_initial_talk_corr"], color='k', label='Subsamples $pH_{TA/DIC}$', s=20, alpha=0.6, edgecolor='k', zorder=6)
 
-# Improve plot aesthetics
+# Format plot
 ax.set_ylabel("$pH_{total}$")
-ax.set_ylim(8.05, 8.2)
+# ax.set_xlabel("Date Time")
+ax.set_ylim(8, 8.2)
 ax.grid(alpha=0.3)
 fig.autofmt_xdate()
 
-# Add a legend with custom marker sizes
-handles, labels = ax.get_legend_handles_labels()
+# Set y-axis labels every 0.05
+yticks = np.arange(8.0, 8.21, 0.05)
+ax.set_yticks(yticks)
+
+# Add legend
+from matplotlib.lines import Line2D
 custom_handles = [
-    plt.Line2D([], [], marker='o', color='w', label='Uncorrected pH', markersize=6, markerfacecolor='xkcd:light pink'),
-    plt.Line2D([], [], marker='o', color='w', label='Corrected pH', markersize=6, markerfacecolor='b'),
-] + handles[2:]  # Append other handles without modification
-legend = ax.legend(handles=custom_handles, loc="upper left")
-
-plt.show()
-
-# #%%
-# # Use all subsamples to interpolate a correction for the entire dataset
-# interp = PchipInterpolator(subsamples['date_time'].astype(np.int64), subsamples['diff'], extrapolate=True)
-# df['pchip_pH_difference'] = interp(df['date_time'].astype(np.int64))
-
-# # Apply the interpolated correction
-# df['pH_optode_corrected'] = df['pH_insitu_ta_est'] - df['pchip_pH_difference']
-
-# # Ensure 'diff' contains only finite values before interpolation
-# subsamples = subsamples[np.isfinite(subsamples['diff'])]
-
-# # Initialize a DataFrame to hold bootstrapped uncertainties
-# df['pH_uncertainty'] = np.nan
-
-# # Define the date ranges and their corresponding correction numbers
-# date_ranges = {
-#     1: ('beginning', '2020-12-10'),
-#     2: ('2020-12-11', '2020-12-15'),
-#     3: ('2020-12-16', '2020-12-16'),
-#     4: ('2020-12-17', '2020-12-18'),
-#     5: ('2020-12-19', '2020-12-21'),
-#     6: ('2020-12-22', '2020-12-27'),
-#     7: ('2020-12-28', 'end')
-# }
-
-# # Function to assign correction numbers based on inclusive date ranges
-# def assign_correction_number(date, date_ranges):
-#     for correction_number, (start_str, end_str) in date_ranges.items():
-#         start_date = pd.to_datetime(start_str) if start_str != 'beginning' else pd.NaT
-#         end_date = pd.to_datetime(end_str) if end_str != 'end' else pd.NaT
-
-#         # If we have a valid end date, add one day (to include the entire end day) and subtract one second to avoid including midnight of the next day
-#         if pd.notnull(end_date):
-#             end_date = end_date + pd.Timedelta(days=1) - pd.Timedelta(seconds=1)
-
-#         # Now check if the date falls within the range, inclusive of both start and end dates
-#         if (pd.isnull(start_date) or date >= start_date) and (pd.isnull(end_date) or date <= end_date):
-#             return correction_number
-#     return np.nan  # Return NaN if the date does not fall into any range
-
-# # Re-apply the function to assign correction numbers
-# df['correction_number'] = df['date_time'].apply(lambda date: assign_correction_number(date, date_ranges))
-# subsamples['correction_number'] = subsamples['date_time'].apply(lambda date: assign_correction_number(date, date_ranges))
-
-# # Make sure no rows have NaN for correction_number
-# assert not df['correction_number'].isnull().any(), "There are rows in df with NaN correction_number"
-# assert not subsamples['correction_number'].isnull().any(), "There are rows in subsamples with NaN correction_number"
-
-# for correction_number in date_ranges.keys():
-#     file_df_indices = df['correction_number'] == correction_number
-#     file_subsamples = subsamples[subsamples['correction_number'] == correction_number]
-
-#     # Check if there are at least two subsamples to perform interpolation
-#     if len(file_subsamples) >= 2:
-#         n_iterations = 100
-#         bootstrapped_pH_values = []
-        
-#         # Dynamic fraction to omit based on the number of subsamples
-#         fraction_to_omit = min(0.3, (len(file_subsamples) - 1) / len(file_subsamples))
-
-#         for iteration in range(n_iterations):
-#             # Randomly sample a subset of subsamples
-#             bootstrapped_subsamples = file_subsamples.sample(frac=1 - fraction_to_omit)
-#             bootstrapped_subsamples = bootstrapped_subsamples[np.isfinite(bootstrapped_subsamples['diff'])].sort_values(by='date_time').drop_duplicates(subset='date_time')
-
-#             # Ensure that at least two samples are present after dropping duplicates
-#             if len(bootstrapped_subsamples) > 1:
-#                 # Perform interpolation
-#                 interp = PchipInterpolator(bootstrapped_subsamples['date_time'].astype(np.int64), bootstrapped_subsamples['diff'], extrapolate=False)
-#                 temp_pH_difference = interp(df.loc[file_df_indices, 'date_time'].astype(np.int64))
-
-#                 # Assign interpolated values back to the DataFrame
-#                 df.loc[file_df_indices, 'pchip_pH_difference_temp'] = temp_pH_difference
-                
-#                 # Calculate and store the corrected pH values
-#                 temp_pH_corrected = df.loc[file_df_indices, 'pH_insitu_ta_est'] - temp_pH_difference
-#                 bootstrapped_pH_values.append(temp_pH_corrected)
-
-#         # Calculate uncertainty as the standard deviation across bootstrapped iterations
-#         if bootstrapped_pH_values:
-#             pH_uncertainty = np.std(np.column_stack(bootstrapped_pH_values), axis=1)
-#             df.loc[file_df_indices, 'pH_uncertainty'] = pH_uncertainty
-#     else:
-#         # Skip this iteration and print a message
-#         print(f"Skipping bootstrapping for correction number {correction_number}: not enough subsamples.")
-
-
-# # Continue with the rest of the script for moving average and plotting...
-
-# # === SIMPLE MOVING AVERAGE
-# # Compute simple moving average (SMA) over period of 30 minutes
-# df["SMA"] = df["pH_optode_corrected"].rolling(60, min_periods=1).mean()
-# df["SMA_uncertainty"] = df["pH_uncertainty"].rolling(60, min_periods=1).mean()
-
-# # Save the results
-# # df.to_csv('./data/processing/processed_uws_data_with_uncertainty.csv', index=False)
-# # subsamples.to_csv('./data/processing/subsamples_pH_correction_with_uncertainty.csv', index=False)
-
-# print("Processing and uncertainty estimation completed.")
-
-# # Create plot
-# fig, ax = plt.subplots(figsize=(6, 4), dpi=300)
-
-# # Plotting the uncorrected and corrected pH values along with uncertainties
-# L = df["SMA"].notnull()
-# ax.scatter(df["date_time"][L], df["pH_insitu_ta_est"][L], s=0.1, label="Uncorrected pH", color='xkcd:light pink', alpha=0.6)
-# ax.scatter(df["date_time"][L], df["SMA"][L], s=0.1, label="Corrected pH", color='b', alpha=0.6)
-# ax.fill_between(df["date_time"][L], df["SMA"][L] - (df["SMA_uncertainty"][L] +1), df["SMA"][L] + (df["SMA_uncertainty"][L] + 1), color='b', alpha=0.2)
-# ax.scatter(subsamples["date_time"], subsamples["pH_initial_talk_corr"], color='k', label='Subsamples $pH_{TA/DIC}$', s=20, alpha=0.6, edgecolor='k', zorder=6)
-
-# # Improve plot aesthetics
-# ax.set_ylabel("$pH_{total}$")
-# ax.set_ylim(8.05, 8.2)
-# ax.grid(alpha=0.3)
-# fig.autofmt_xdate()
-
-# # Add a legend with custom marker sizes
-# handles, labels = ax.get_legend_handles_labels()
-# custom_handles = [
-#     plt.Line2D([], [], marker='o', color='w', label='Uncorrected pH', markersize=6, markerfacecolor='xkcd:light pink'),
-#     plt.Line2D([], [], marker='o', color='w', label='Corrected pH', markersize=6, markerfacecolor='b'),
-# ] + handles[2:]  # Append other handles without modification
+    Line2D([0], [0], marker='o', color='w', label='Uncorrected pH', markersize=6, markerfacecolor='xkcd:light pink'),
+    Line2D([0], [0], marker='o', color='w', label='Corrected pH', markersize=6, markerfacecolor='b'),
+] + ax.get_legend_handles_labels()[0][2:]  # Append other handles without modification
 # legend = ax.legend(handles=custom_handles, loc="upper left")
 
-# plt.show()
+# Show plot
+plt.show()
 
-# #%%
-# import matplotlib.pyplot as plt
+# Save the DataFrame with corrected pH values and uncertainty for plotting
+df.to_csv('./data/processing/PLOTTING_processed_uws_data_with_uncertainty_bootstrapping.csv', index=False)
+subsamples.to_csv('./data/processing/PLOTTING_subsamples_with_corrections.csv', index=False)
 
-# # Get unique filenames from the DataFrame
-# unique_filenames = df['filename'].unique()
-
-# # Set up the figure size and layout
-# plt.figure(figsize=(14, 14))
-
-# # Loop through each unique filename and create a plot
-# for i, filename in enumerate(unique_filenames, start=1):
-#     # Filter the dataframe for the current filename
-#     file_df = df[df['filename'] == filename]
-    
-#     # Create a subplot for each filename
-#     plt.subplot(len(unique_filenames), 1, i)
-#     plt.scatter(file_df['date_time'], file_df['pH_optode_corrected'], label=f'Corrected pH for {filename}')
-#     plt.title(f'Corrected pH for {filename}')
-#     plt.xlabel('Date Time')
-#     plt.ylabel('pH')
-#     plt.legend()
-#     plt.tight_layout()
-
-# # Show the plot
-# plt.show()

@@ -2,6 +2,7 @@ import copy
 import numpy as np, pandas as pd
 from matplotlib import pyplot as plt
 import PyCO2SYS as pyco2, koolstof as ks, calkulate as calk
+from koolstof import vindta as ksv
 
 # Import logfile and dbs file
 logfile = ks.read_logfile(
@@ -12,7 +13,7 @@ logfile = ks.read_logfile(
         "3C standard separator modified LD temp",
     ],
 )
-dbs = ks.read_dbs("data/VINDTA/SO279.dbs", logfile=logfile)
+dbs = ks.read_dbs("data/VINDTA/SO279.dbs") #
 
 # Drop weird first row
 dbs.drop(index=dbs.index[dbs.bottle == "03/02/21"], inplace=True)
@@ -162,21 +163,43 @@ dbs.loc[np.isin(dbs.bottle, ["CRM-189-0775-1"]), "reference_good"] = False
 
 # ---------------------------------------------------------^^^- UPDATE ABOVE HERE! -^^^-
 # Get blanks and apply correction
-dbs.get_blank_corrections()
+# dbs.get_blank_corrections()
 # dbs.plot_blanks(figure_path="figs/vindta/dic_blanks/")
 
-# Calibrate DIC and plot calibration
-dbs.calibrate_dic()
-dic_sessions = copy.deepcopy(dbs.sessions)
-# dbs.plot_k_dic(figure_path="figs/vindta/")
-# dbs.plot_dic_offset(figure_path="figs/vindta/")
+sessions = ksv.blank_correction(
+    dbs,
+    logfile,
+    blank_col="blank",
+    counts_col="counts",
+    runtime_col="run_time",
+    session_col="dic_cell_id",
+    use_from=6,
+)
 
-# Calibrate and solve alkalinity and plot calibration
+ksv.plot_increments(dbs, logfile, use_from=6)
+ksv.plot_blanks(dbs, sessions)
+
+# Calibrate
+ksv.calibrate_dic(dbs, sessions)
+
+# Plot calibration factors
+ksv.plot_k_dic(dbs, sessions, show_ignored=True)
+
+# Plot CRM offsets
+ksv.plot_dic_offset(dbs, sessions)
+
+# Calibrate DIC and plot calibration
+# dbs.calibrate_dic()
+# dic_sessions = copy.deepcopy(dbs.sessions)
+# # dbs.plot_k_dic(figure_path="figs/vindta/")
+# # dbs.plot_dic_offset(figure_path="figs/vindta/")
+
+# # Calibrate and solve alkalinity and plot calibration
 calk.io.get_VINDTA_filenames(dbs)
 calk.dataset.calibrate(dbs)
 calk.dataset.solve(dbs)
-# calk.plot.titrant_molinity(dbs, figure_fname="figs/vindta/titrant_molinity.png", show_bad=False)
-# calk.plot.alkalinity_offset(dbs, figure_fname="figs/vindta/alkalinity_offset.png", show_bad=False)
+calk.plot.titrant_molinity(dbs, figure_fname="figs/vindta/titrant_molinity.png", show_bad=False)
+calk.plot.alkalinity_offset(dbs, figure_fname="figs/vindta/alkalinity_offset.png", show_bad=False)
 
 # Demote dbs to a standard DataFrame
 dbs = pd.DataFrame(dbs)
@@ -688,4 +711,4 @@ ctd_data.rename(rn, axis=1, inplace=True)
 # Save CTD and UWS datasets to csv.
 subsamples.to_csv('./data/processing/processed_vindta_subsamples.csv', index=False)
 ctd_data.to_csv('./data/processing/processed_vindta_ctd.csv', index=False)
-# dbs.to_csv('./data/processing/dbs.csv', index=False)
+dbs.to_csv('./data/processing/dbs.csv', index=False)

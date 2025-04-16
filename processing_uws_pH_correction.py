@@ -1,12 +1,13 @@
 import pandas as pd, numpy as np
 import PyCO2SYS as pyco2
 from scipy.interpolate import PchipInterpolator
+import matplotlib.pyplot as plt
 
 # Import UWS continuous pH data
 df = pd.read_csv('./data/processing/raw_uws_data.csv')
 
 # Import subsamples
-subsamples = pd.read_csv('./data/processing/internal_subsamples_data.csv')
+subsamples = pd.read_csv('./data/processing/processed_vindta_subsamples_with_uncertainty.csv')
 
 # === FAST INCREASES PROCESSING
 # Cut continuous pH data to remove fast, unrealistic pH increases at the 
@@ -107,3 +108,32 @@ for file in file_list:
 # Save UWS continuous pH dataset
 df.to_csv('./data/processing/processed_uws_data.csv', index=False)
 subsamples.to_csv('./data/processing/subsamples_pH_correction.csv', index=False)
+
+#%% === Plotting
+# Create figure
+fig, ax = plt.subplots(figsize=(10, 6), dpi=300)
+
+# Plot uncorrected and corrected pH with simple moving average
+L = df["SMA"].notnull()
+ax.scatter(df["date_time"][L], df["pH_insitu_ta_est"][L], s=0.1, label="Uncorrected pH", color='xkcd:light pink', alpha=0.6)
+ax.scatter(df["date_time"][L], df["SMA"][L], s=0.1, label="Corrected pH", color='b', alpha=0.6)
+ax.fill_between(df["date_time"][L], df["SMA"][L] - df["pH_optode_corrected"][L].rolling(60, min_periods=1).std(), df["SMA"][L] + df["pH_optode_corrected"][L].rolling(60, min_periods=1).std(), color='b', alpha=0.2)
+ax.scatter(subsamples["date_time"], subsamples["pH_initial_talk_corr"], color='k', label='Subsamples $pH_{TA/DIC}$', s=20, alpha=0.6, edgecolor='k', zorder=6)
+
+# Format plot
+ax.set_ylabel("$pH_{total}$")
+ax.set_xlabel("Date Time")
+ax.set_ylim(8.05, 8.2)
+ax.grid(alpha=0.3)
+fig.autofmt_xdate()
+
+# Add legend
+from matplotlib.lines import Line2D
+custom_handles = [
+    Line2D([0], [0], marker='o', color='w', label='Uncorrected pH', markersize=6, markerfacecolor='xkcd:light pink'),
+    Line2D([0], [0], marker='o', color='w', label='Corrected pH', markersize=6, markerfacecolor='b'),
+] + ax.get_legend_handles_labels()[0][2:]  # Append other handles without modification
+legend = ax.legend(handles=custom_handles, loc="upper left")
+
+# Show plot
+plt.show()
